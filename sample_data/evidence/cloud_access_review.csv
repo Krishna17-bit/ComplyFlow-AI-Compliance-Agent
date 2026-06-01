@@ -1,0 +1,4 @@
+system,review_date,reviewer,total_users,removed_users,notes
+AWS production,2026-04-10,Security Lead,14,2,"Quarterly access review completed. Removed two stale contractor accounts. MFA enforced for all administrative users."
+GitHub organization,2026-04-12,Engineering Manager,31,1,"Repository access reviewed. One former intern removed. Branch protection enabled on production repositories."
+Customer support console,2026-04-14,Support Manager,9,0,"Support access confirmed for active support agents only. No excessive admin role found."

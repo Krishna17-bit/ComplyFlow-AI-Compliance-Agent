@@ -1,0 +1,4 @@
+vendor,business_owner,data_processed,dpa_status,security_review,last_review_date,risk_rating
+CloudBox Storage,Infrastructure Lead,Customer file metadata,Signed,Completed,2026-02-18,Medium
+MailBridge,Operations Lead,Email address and support messages,Signed,Completed,2026-01-20,Medium
+AnalyticsFox,Product Lead,Usage analytics only,Not required,Pending,2025-11-02,Low
