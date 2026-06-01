@@ -104,18 +104,6 @@ The app will map evidence to controls, detect missing proof, draft questionnaire
 
 ## Important safety notes
 
-- Keep `.env` local only. Never push `.env` to GitHub.
 - The app requires human review before submitting any customer, legal, audit, or compliance response.
 - The built-in framework checklists are readiness workflows, not official certification decisions.
 - Final compliance interpretation should be reviewed by qualified legal, security, or audit professionals.
-
-## GitHub push safety
-
-Before pushing, verify secrets are ignored:
-
-```bash
-git check-ignore -v .env
-git ls-files .env
-```
-
-`git ls-files .env` should print nothing.
