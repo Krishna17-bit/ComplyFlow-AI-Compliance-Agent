@@ -29,9 +29,10 @@ class ComplianceAgent:
     def __init__(self, documents: list[Document], *, use_ai: bool = True) -> None:
         self.documents = documents
         self.chunks = chunk_documents(documents)
-        self.retriever = EvidenceRetriever(self.chunks)
-        self.llm = GeminiClient() if use_ai else GeminiClient()
+        self.llm = GeminiClient()
         self.use_ai = use_ai and self.llm.configured
+        self.retriever = EvidenceRetriever(self.chunks, gemini_client=(self.llm if self.use_ai else None))
+
 
     def analyze(self, framework_names: list[str], depth: str = "Balanced") -> AnalysisResult:
         controls = get_controls(framework_names)
@@ -149,6 +150,12 @@ class ComplianceAgent:
         prompt = f"""
 You are a strict compliance evidence analyst. Review the proposed control mappings using only the provided evidence quotes.
 Do not invent evidence. If evidence is weak, mark Partial or Missing.
+
+CRITICAL EVALUATION RULES FOR AI GOVERNANCE (ISO 42001) & EU AI ACT:
+1. For AI System Inventory (AIGOV-INVENTORY) or High-Risk Classification (EUAIACT-HIGH-RISK): The evidence MUST explicitly state the registry/inventory details, owners, and deployment contexts of specific models. General generic assertions without reference to a model list or specific tools are "Partial" or "Missing".
+2. For Data Governance & Lineage (AIGOV-DATA or EUAIACT-DATA-GOV): The evidence MUST document training/validation dataset provenance, license checks, or systematic bias checking processes. Standard security policies (e.g. databases are encrypted) do NOT suffice for model data governance; if model-specific data governance is absent, mark "Partial".
+3. For Prohibited Practices (EUAIACT-PROHIBITED): Ensure there is an explicit screening policy or ethics check blocking prohibited practices (e.g. social scoring, subliminal influence).
+
 Return strict JSON array. Each item must contain:
 control_id, status (Covered|Partial|Missing), confidence (0-1), risk_level (Low|Medium|High|Critical), explanation, missing_evidence array, improvement_actions array.
 

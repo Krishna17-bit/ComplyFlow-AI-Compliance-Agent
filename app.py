@@ -9,6 +9,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.agents import ComplianceAgent
+from src.connectors import get_aws_config_evidence, get_gcp_config_evidence
 from src.document_loader import load_local_folder, load_uploaded_file, parse_questionnaire_file
 from src.frameworks import FRAMEWORKS
 from src.gemini_client import GeminiClient
@@ -170,6 +171,12 @@ with st.sidebar:
         st.warning("Local fallback active")
         st.caption("Add your key to `.env` to enable AI-assisted analysis.")
 
+    st.markdown("**Search engine**")
+    if client.configured:
+        st.success("Vector (Gemini text-embedding-004)")
+    else:
+        st.info("TF-IDF (Local Fallback)")
+
     st.divider()
     st.markdown("**What it can process**")
     st.markdown("- Policies and SOPs\n- PDF/DOCX/TXT evidence\n- CSV/XLSX exports\n- Security questionnaires\n- Vendor and AI governance docs")
@@ -197,7 +204,7 @@ with setup_cols[0]:
     selected_frameworks = st.multiselect(
         "Frameworks",
         list(FRAMEWORKS.keys()),
-        default=["SOC 2 Readiness", "ISO 27001 Readiness", "AI Governance Readiness"],
+        default=["SOC 2 Readiness", "ISO 27001 Readiness", "AI Governance Readiness", "EU AI Act Readiness"],
         label_visibility="collapsed",
     )
 with setup_cols[1]:
@@ -213,6 +220,13 @@ uploaded_files = st.file_uploader(
     accept_multiple_files=True,
     type=["pdf", "docx", "txt", "md", "csv", "xlsx", "xls", "json"],
 )
+
+st.markdown("### Cloud Connectors & Live Telemetry")
+conn_col1, conn_col2 = st.columns(2)
+with conn_col1:
+    connect_aws = st.checkbox("Simulate AWS Security Hub Config Sync", value=True, help="Automatically inspects S3 default encryption, block public access, IAM MFA configuration, and key rotation.")
+with conn_col2:
+    connect_gcp = st.checkbox("Simulate GCP Security Command Center Sync", value=True, help="Automatically inspects uniform bucket-level access, CMEK keys, MFA status, and audit log profiles.")
 
 run_col, save_col = st.columns([1, 1])
 with run_col:
@@ -231,6 +245,23 @@ if run:
     if load_errors:
         for err in load_errors:
             st.error(err)
+            
+    if connect_aws:
+        try:
+            aws_doc = get_aws_config_evidence()
+            docs.append(aws_doc)
+            st.toast("AWS Security Hub Config Telemetry Sync Complete.")
+        except Exception as exc:
+            st.error(f"AWS Sync Failed: {exc}")
+            
+    if connect_gcp:
+        try:
+            gcp_doc = get_gcp_config_evidence()
+            docs.append(gcp_doc)
+            st.toast("GCP Security Command Center Telemetry Sync Complete.")
+        except Exception as exc:
+            st.error(f"GCP Sync Failed: {exc}")
+
     if not selected_frameworks:
         st.error("Select at least one framework.")
     elif not docs:
@@ -445,7 +476,7 @@ else:
     st.markdown(
         """
         1. Keep **Include sample evidence** enabled.
-        2. Select **SOC 2 Readiness**, **ISO 27001 Readiness**, and **AI Governance Readiness**.
+        2. Select **SOC 2 Readiness**, **ISO 27001 Readiness**, **AI Governance Readiness**, and **EU AI Act Readiness**.
         3. Click **Run compliance analysis**.
         4. Open **Control Mapping** to verify source quotes and missing evidence.
         5. Open **Questionnaire** and click **Generate grounded answers**.

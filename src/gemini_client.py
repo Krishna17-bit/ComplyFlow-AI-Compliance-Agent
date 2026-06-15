@@ -60,6 +60,45 @@ class GeminiClient:
         except Exception as exc:
             return LLMResponse(False, "", str(exc))
 
+    def embed_text(self, text: str) -> list[float]:
+        if not self.configured or not text.strip():
+            return []
+        try:
+            response = self._client.models.embed_content(
+                model="text-embedding-004",
+                contents=text,
+            )
+            if response and hasattr(response, "embedding") and response.embedding:
+                return response.embedding.values
+            return []
+        except Exception:
+            return []
+
+    def embed_texts(self, texts: list[str]) -> list[list[float]]:
+        if not self.configured or not texts:
+            return []
+        try:
+            response = self._client.models.embed_content(
+                model="text-embedding-004",
+                contents=texts,
+            )
+            if response and hasattr(response, "embeddings") and response.embeddings:
+                return [emb.values for emb in response.embeddings]
+            # Fallback one-by-one if standard batch response structure differs
+            out = []
+            for t in texts:
+                out.append(self.embed_text(t))
+            return [x for x in out if x]
+        except Exception:
+            # Fallback one-by-one
+            out = []
+            for t in texts:
+                val = self.embed_text(t)
+                if val:
+                    out.append(val)
+            return out
+
+
 
 def extract_json(text: str, fallback: Any) -> Any:
     if not text:

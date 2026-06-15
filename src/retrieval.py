@@ -50,16 +50,58 @@ def chunk_documents(docs: list[Document], chunk_words: int = 420, overlap_words:
 
 
 class EvidenceRetriever:
-    def __init__(self, chunks: list[EvidenceChunk]):
+    def __init__(self, chunks: list[EvidenceChunk], gemini_client = None):
         self.chunks = chunks
+        self.gemini_client = gemini_client
+        self.vector_embeddings = None
         self.vectorizer: TfidfVectorizer | None = None
         self.matrix = None
+
+        if chunks and gemini_client and gemini_client.configured:
+            try:
+                import numpy as np
+                texts = [c.text for c in chunks]
+                embeddings = []
+                for i in range(0, len(texts), 50):
+                    batch = texts[i : i + 50]
+                    batch_embs = gemini_client.embed_texts(batch)
+                    if batch_embs:
+                        embeddings.extend(batch_embs)
+                if len(embeddings) == len(chunks):
+                    self.vector_embeddings = np.array(embeddings)
+            except Exception:
+                self.vector_embeddings = None
+
         if chunks:
             self.vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), min_df=1)
             self.matrix = self.vectorizer.fit_transform([c.text for c in chunks])
 
     def search(self, query: str, top_k: int = 6) -> list[EvidenceChunk]:
-        if not self.chunks or self.vectorizer is None or self.matrix is None:
+        if not self.chunks:
+            return []
+
+        # Try Vector Search first
+        if self.vector_embeddings is not None and self.gemini_client:
+            try:
+                import numpy as np
+                q_emb = self.gemini_client.embed_text(query)
+                if q_emb:
+                    q_v = np.array(q_emb).reshape(1, -1)
+                    sims = cosine_similarity(q_v, self.vector_embeddings).flatten()
+                    order = sims.argsort()[::-1][:top_k]
+                    out: list[EvidenceChunk] = []
+                    for idx in order:
+                        score = float(sims[idx])
+                        if score <= 0.05 and len(out) >= 2:
+                            continue
+                        normalized_score = round(max(0.0, min(1.0, score)), 4)
+                        out.append(replace(self.chunks[int(idx)], score=normalized_score))
+                    return out
+            except Exception:
+                pass
+
+        # Fallback to TF-IDF search
+        if self.vectorizer is None or self.matrix is None:
             return []
         qv = self.vectorizer.transform([query])
         sims = cosine_similarity(qv, self.matrix).flatten()
@@ -71,6 +113,7 @@ class EvidenceRetriever:
                 continue
             out.append(replace(self.chunks[int(idx)], score=round(score, 4)))
         return out
+
 
 
 def keyword_overlap_score(text: str, keywords: list[str]) -> float:

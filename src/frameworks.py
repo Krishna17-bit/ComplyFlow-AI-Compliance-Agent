@@ -47,6 +47,14 @@ FRAMEWORKS: dict[str, list[Control]] = {
         Control("AIGOV-MONITORING", "AI Governance Readiness", "Post-deployment monitoring", "AI performance, drift, incidents, misuse, and feedback are monitored after deployment.", ["monitoring", "drift", "incident", "misuse", "feedback", "performance", "post-deployment"]),
         Control("AIGOV-SECURITY", "AI Governance Readiness", "AI security controls", "Prompt injection, data leakage, access, logging, and model abuse risks are controlled.", ["prompt injection", "data leakage", "access control", "AI security", "abuse", "logging", "guardrail"]),
     ],
+    "EU AI Act Readiness": [
+        Control("EUAIACT-PROHIBITED", "EU AI Act Readiness", "Prohibited AI systems screening", "The organization screens and documents that no deployed AI systems engage in social scoring, subliminal manipulation, or untargeted facial recognition scraping.", ["prohibited", "social scoring", "subliminal", "manipulation", "scraping", "facial recognition", "screening", "ethics"]),
+        Control("EUAIACT-HIGH-RISK", "EU AI Act Readiness", "High-risk system classification", "AI systems are classified as high-risk or limited-risk based on Annex III and safety component rules.", ["high risk", "classification", "annex iii", "safety component", "limited risk", "infrastructure", "employment"]),
+        Control("EUAIACT-DATA-GOV", "EU AI Act Readiness", "Data governance and bias review", "Training, validation, and testing datasets undergo documentation for data provenance, design choices, and systematic bias checks.", ["dataset", "bias", "data governance", "provenance", "training data", "validation", "representative"]),
+        Control("EUAIACT-DOC", "EU AI Act Readiness", "Technical documentation and logs", "Technical documentation and continuous event-logging are maintained to demonstrate compliance to authorities.", ["technical documentation", "logging", "event log", "architecture", "conformity", "compliance trail"]),
+        Control("EUAIACT-HUMAN", "EU AI Act Readiness", "Human oversight controls", "High-risk AI systems incorporate human-in-the-loop controls, manual overrides, and operational warnings.", ["human oversight", "human in the loop", "override", "intervention", "kill switch", "warnings"]),
+        Control("EUAIACT-TRANSPARENCY", "EU AI Act Readiness", "User transparency disclosures", "Synthetically generated text, images, or audio are marked and users are notified of AI interaction.", ["transparency", "synthetic content", "watermark", "disclosure", "user notice", "chatbot"]),
+    ],
 }
 
 
