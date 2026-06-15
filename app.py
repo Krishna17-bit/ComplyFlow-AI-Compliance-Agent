@@ -24,8 +24,12 @@ from src.reporting import (
     save_audit_files,
 )
 from src.ui_styles import APP_CSS
+from src.database import init_db, add_questionnaire_override, get_questionnaire_overrides
+from src.trust_center import render_trust_center
+from src.auditor_portal import render_auditor_portal
 
 load_dotenv()
+init_db()
 BASE_DIR = Path(__file__).resolve().parent
 SAMPLE_DIR = BASE_DIR / "sample_data"
 
@@ -291,7 +295,7 @@ if result:
     with cols[3]:
         metric_card("Missing", str(result.missing_count), "No reliable evidence found")
 
-    tabs = st.tabs(["Dashboard", "Control Mapping", "Questionnaire", "Policy Gaps", "Risk Register", "Evidence Library", "Audit Package"])
+    tabs = st.tabs(["Dashboard", "Control Mapping", "Questionnaire", "Policy Gaps", "Risk Register", "Evidence Library", "Trust Center", "Auditor Portal", "Audit Package"])
 
     with tabs[0]:
         left, right = st.columns([1.3, 1])
@@ -372,9 +376,19 @@ How are vendors and subprocessors reviewed?"""
                 use_container_width=True,
             )
             st.markdown("### Answer details")
-            for ans in answers:
+            for idx, ans in enumerate(answers):
                 with st.expander(ans.question):
                     render_answer(ans)
+                    with st.form(key=f"edit_q_form_{idx}"):
+                        edited_ans_text = st.text_area("Edit Answer Draft", value=ans.answer, height=100)
+                        edited_conf = st.slider("Adjust Confidence Score", min_value=0.0, max_value=1.0, value=float(ans.confidence), step=0.05)
+                        save_override = st.form_submit_button("Approve & Learn (Save Override)")
+                        if save_override:
+                            add_questionnaire_override(ans.question, edited_ans_text, edited_conf)
+                            st.success("Override saved to database! The search index will now retrieve this approved version.")
+                            ans.answer = edited_ans_text
+                            ans.confidence = edited_conf
+                            st.rerun()
 
     with tabs[3]:
         st.markdown("### Missing evidence and policy gaps")
@@ -441,6 +455,12 @@ How are vendors and subprocessors reviewed?"""
                 st.write(doc.text[:6000])
 
     with tabs[6]:
+        render_trust_center()
+
+    with tabs[7]:
+        render_auditor_portal(result)
+
+    with tabs[8]:
         st.markdown("### Audit package")
         st.caption("Export a complete package containing JSON, report markdown, control mapping CSV, gaps, risks, and questionnaire answers if generated.")
         audit_json = json.dumps(result.to_dict(), indent=2, default=str)

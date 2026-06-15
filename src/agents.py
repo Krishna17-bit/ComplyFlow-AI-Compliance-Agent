@@ -204,15 +204,54 @@ Mappings:
         if not questions:
             return []
 
-        local_answers = [self._local_answer_question(q) for q in questions]
-        if not self.use_ai:
-            return local_answers
+        from src.database import get_questionnaire_overrides
+        overrides = get_questionnaire_overrides()
 
-        enhanced: list[QuestionnaireAnswer] = []
-        for start in range(0, len(local_answers), 6):
-            batch = local_answers[start : start + 6]
-            enhanced.extend(self._ai_answer_batch(batch))
-        return enhanced if len(enhanced) == len(local_answers) else local_answers
+        out: list[QuestionnaireAnswer] = []
+        pending_questions: list[str] = []
+        overrides_lookup = {k.lower().strip(): (k, v) for k, v in overrides.items()}
+
+        for q in questions:
+            ql = q.lower().strip()
+            if ql in overrides_lookup:
+                orig_k, override_data = overrides_lookup[ql]
+                out.append(
+                    QuestionnaireAnswer(
+                        question=q,
+                        answer=override_data["answer"],
+                        confidence=override_data["confidence"],
+                        review_required=False,
+                        evidence=[{"evidence_id": "DB-OVERRIDE", "source_title": "Approved Knowledge Base", "quote": "Overridden by human reviewer."}],
+                        assumptions=["Loaded from SQLite overrides library."],
+                    )
+                )
+            else:
+                pending_questions.append(q)
+
+        if not pending_questions:
+            return out
+
+        local_answers = [self._local_answer_question(q) for q in pending_questions]
+        if self.use_ai:
+            enhanced: list[QuestionnaireAnswer] = []
+            for start in range(0, len(local_answers), 6):
+                batch = local_answers[start : start + 6]
+                enhanced.extend(self._ai_answer_batch(batch))
+            generated = enhanced if len(enhanced) == len(local_answers) else local_answers
+        else:
+            generated = local_answers
+
+        merged: list[QuestionnaireAnswer] = []
+        gen_idx = 0
+        overridden_by_q = {ans.question: ans for ans in out}
+        for q in questions:
+            if q in overridden_by_q:
+                merged.append(overridden_by_q[q])
+            else:
+                merged.append(generated[gen_idx])
+                gen_idx += 1
+        return merged
+
 
     def _local_answer_question(self, question: str) -> QuestionnaireAnswer:
         chunks = self.retriever.search(question, top_k=6)

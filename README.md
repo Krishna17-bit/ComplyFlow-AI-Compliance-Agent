@@ -17,7 +17,10 @@ It is designed for real compliance-preparation workflows where teams need to upl
 - AI-assisted control mapping with strict evidence-only prompts
 - Missing evidence and policy gap detection
 - Risk register generation
-- Security questionnaire answer drafting
+- Security questionnaire answer drafting with inline edits and a persistent **Knowledge Base learning loop**
+- **Gated Customer Trust Center** with click-wrap NDA signup registers for secure document sharing
+- **Collaborative Auditor Portal** with status validation, review remarks, and SHA-256 cryptographic audit locks
+- **Persistent Relational Database** (SQLite) to store signed NDAs, override answers, audit locks, and comments
 - Source quotes and evidence IDs for every control and answer
 - Audit package export as JSON, Markdown, CSV, and ZIP
 - Failure-safe local fallback if the API key is missing or the API call fails
