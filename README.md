@@ -81,7 +81,7 @@ The ComplyFlow compliance path follows this simple progression:
 
 ---
 
-## 9. Mermaid Architecture Diagram
+## 9. Architecture Diagram
 
 ```mermaid
 flowchart TD
