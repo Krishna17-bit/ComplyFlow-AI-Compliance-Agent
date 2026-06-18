@@ -64,12 +64,6 @@ ComplyFlow AI addresses these issues by providing an **evidence-backed, control-
 
 ---
 
-## 7. Screenshots & UI Previews
-*(Placeholders for GRC Dashboard and Auditor Portal screens)*
-![ComplyFlow Dashboard Mockup](https://raw.githubusercontent.com/username/complyflow-ai/main/docs/assets/dashboard_mockup.png)
-
----
-
 ## 8. Full Workflow Overview
 The ComplyFlow compliance path follows this simple progression:
 1. **Ingest**: Upload policies and configuration files into the **Evidence Library**.
