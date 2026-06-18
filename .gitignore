@@ -11,3 +11,9 @@ outputs/
 audit_logs/
 *.log
 .DS_Store
+*.db
+*.sqlite
+uploads/
+exports/
+logs/
+node_modules/

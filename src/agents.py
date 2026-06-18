@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from src.frameworks import get_controls
-from src.gemini_client import GeminiClient, extract_json
+from src.gemini_client import extract_json
+from src.provider_client import MultiProviderClient
 from src.models import (
     AnalysisResult,
     Control,
@@ -29,7 +30,7 @@ class ComplianceAgent:
     def __init__(self, documents: list[Document], *, use_ai: bool = True) -> None:
         self.documents = documents
         self.chunks = chunk_documents(documents)
-        self.llm = GeminiClient()
+        self.llm = MultiProviderClient()
         self.use_ai = use_ai and self.llm.configured
         self.retriever = EvidenceRetriever(self.chunks, gemini_client=(self.llm if self.use_ai else None))
 

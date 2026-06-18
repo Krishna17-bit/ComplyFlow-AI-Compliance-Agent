@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - MOCK_MODE=true
+      - LLM_PROVIDER=mock
+    volumes:
+      - .:/app
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MOCK_MODE=true
+      - LLM_PROVIDER=mock
+    volumes:
+      - .:/app
+    command: python api_server.py
