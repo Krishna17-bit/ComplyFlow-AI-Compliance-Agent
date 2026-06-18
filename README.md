@@ -65,8 +65,11 @@ ComplyFlow AI addresses these issues by providing an **evidence-backed, control-
 ---
 
 ## 7. Screenshots & UI Previews
-*(Placeholders for GRC Dashboard and Auditor Portal screens)*
-![ComplyFlow Dashboard Mockup](https://raw.githubusercontent.com/username/complyflow-ai/main/docs/assets/dashboard_mockup.png)
+### GRC Compliance Dashboard
+![ComplyFlow Dashboard](docs/assets/dashboard.png)
+
+### AI Governance Registry
+![ComplyFlow AI Governance](docs/assets/ai_governance.png)
 
 ---
 
